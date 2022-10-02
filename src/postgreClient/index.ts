@@ -10,22 +10,22 @@ import { PGQueryFunction } from '../interfaces/queryFunction';
 import { IPGClient, IPGPoolClient } from '../interfaces/pg';
 
 const begin = (client: IPGPoolClient) => async () => {
-  logger.debug(`${client.cInfo?.id} Begin`);
+  logger.debug(null, `${client.cInfo?.id} Begin`);
   await client.query('BEGIN');
 };
 
 const query = (client: IPGPoolClient): PGQueryFunction => async (q, params) => {
   try {
-    logger.debug(`pg query ${client.cInfo?.id} ${q} ${params}`);
+    logger.debug(null, `pg query ${client.cInfo?.id} ${q} ${params}`);
     const result = await client.query(q, params || []);
 
-    logger.debug(`pg storage ${client.cInfo?.id} rows: ${result.rows}`);
+    logger.debug(null, `pg storage ${client.cInfo?.id} rows: ${result.rows}`);
 
     return result;
   } catch (e: unknown) {
-    logger.error((e as {stack: unknown}).stack);
-    logger.error({ id: client.cInfo?.id, q });
-    logger.error({ id: client.cInfo?.id, params });
+    logger.error(null, (e as {stack: unknown}).stack);
+    logger.error(null, { id: client.cInfo?.id, q });
+    logger.error(null, { id: client.cInfo?.id, params });
 
     const error = new Error(`Error on query ${client.cInfo?.id} ${q}, params: ${params}`);
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -36,16 +36,16 @@ const query = (client: IPGPoolClient): PGQueryFunction => async (q, params) => {
 };
 
 const commit = (client: IPGPoolClient) => async () => {
-  logger.debug(`${client.cInfo?.id} Commit`);
+  logger.debug(null, `${client.cInfo?.id} Commit`);
   await client.query('COMMIT');
 };
 
 const rollback = (client: IPGPoolClient) => async () => {
   try {
-    logger.debug(`${client.cInfo?.id} ROLLBACK`);
+    logger.debug(null, `${client.cInfo?.id} ROLLBACK`);
     await client.query('ROLLBACK');
   } catch (err) {
-    logger.error(`Error on pg rollback ${client.cInfo?.id} ${err}`);
+    logger.error(null, `Error on pg rollback ${client.cInfo?.id} ${err}`);
   }
 };
 
@@ -115,8 +115,8 @@ const init = async (settings: PoolConfig) => {
   const client = await pool.connect() as IPGPoolClient;
 
   initInfo(client);
-  client.on('notice', msg => logger.warning(`Pg notice ${client.cInfo?.id} ${msg.message}`));
-  logger.debug(`Connection ${client.cInfo?.id} created`);
+  client.on('notice', msg => logger.warning(null, `Pg notice ${client.cInfo?.id} ${msg.message}`));
+  logger.debug(null, `Connection ${client.cInfo?.id} created`);
   return clientFabric(client);
 };
 
