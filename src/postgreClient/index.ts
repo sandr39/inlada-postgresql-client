@@ -4,7 +4,7 @@ import { v4 } from 'uuid';
 import { IStorageClientFactory } from 'inladajs';
 
 import { logger } from 'inlada-logger';
-import { ITransactionService, transactionProcessor } from 'inlada-transaction-processor';
+import { ITransactionProcessor, ITransactionService } from 'inlada-transaction-processor';
 import { IStorageClient } from 'inladajs/dist/interfaces/storage';
 import { PGQueryFunction } from '../interfaces/queryFunction';
 import { IPGClient, IPGPoolClient } from '../interfaces/pg';
@@ -143,7 +143,10 @@ const clearUid = async (uid: string) => {
   }
 };
 
-export const registerInTransactionService = (pgClientFactory: IStorageClientFactory) => {
+export const registerInTransactionService = (
+  pgClientFactory: IStorageClientFactory,
+  transactionProcessor: ITransactionProcessor,
+) => {
   const pgTransaction: ITransactionService = {
     onStart: async uid => {
       const client = await pgClientFactory(uid);
