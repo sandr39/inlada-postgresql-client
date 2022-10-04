@@ -40,6 +40,10 @@ const commit = (client: IPGPoolClient) => async () => {
   await client.query('COMMIT');
 };
 
+const release = (client: IPGPoolClient) => async () => {
+  await client.release();
+};
+
 const rollback = (client: IPGPoolClient) => async () => {
   try {
     logger.debug(null, `${client.cInfo?.id} ROLLBACK`);
@@ -86,6 +90,7 @@ const clientFabric = (client: IPGPoolClient): IPGClient => ({
   commit: commit(client),
   rollback: rollback(client),
   finalize: finalize(client),
+  release: release(client),
   getTableColumns: getTableColumns(client),
   getTableUniqueKey: getTableUniqueKey(client),
 });
@@ -131,8 +136,11 @@ export const pgClientFactoryFactory = (settings: PoolConfig)
   return clients[uid] as IStorageClient;
 };
 
-const clearUid = (uid: string) => {
-  delete clients[uid];
+const clearUid = async (uid: string) => {
+  if (clients[uid]) {
+    await clients[uid].release();
+    delete clients[uid];
+  }
 };
 
 export const registerInTransactionService = (pgClientFactory: IStorageClientFactory) => {
@@ -144,12 +152,12 @@ export const registerInTransactionService = (pgClientFactory: IStorageClientFact
     onSuccess: async uid => {
       const client = await pgClientFactory(uid);
       await client.commit();
-      clearUid(uid);
+      await clearUid(uid);
     },
     onFail: async uid => {
       const client = await pgClientFactory(uid);
       await client.rollback();
-      clearUid(uid);
+      await clearUid(uid);
     },
   };
 

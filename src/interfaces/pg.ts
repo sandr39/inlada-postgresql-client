@@ -7,6 +7,7 @@ export interface IPGClient {
   commit: () => Promise<void>
   rollback: () => Promise<void>
   finalize: () => Promise<void>
+  release: () => Promise<void>
   getTableColumns: (table: string) => Promise<string[]>
   getTableUniqueKey: (table: string) => Promise<string>
 }
